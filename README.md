@@ -1,5 +1,7 @@
 # Blue Rush · 블루 러시
 
+[Play Blue Rush](https://hex-aragon.github.io/blue-rush/) · [Source repository](https://github.com/hex-aragon/blue-rush)
+
 A standalone Three.js underwater arcade racer. Follow a looping rail, dodge wildlife, jump low obstacles, charge drift boosts, and finish three laps against three pacers.
 
 ## Play

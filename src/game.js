@@ -62,4 +62,4 @@ export function stepRace(s,input,dt){
  if(s.distance>=s.length*s.laps){s.distance=s.length*s.laps;s.phase='finished';s.rank=1+s.rivals.filter(r=>r.distance>=s.distance).length;emit(s,'finish','완주!');}
 }
 export const position=s=>1+s.rivals.filter(r=>r.distance>s.distance).length;
-export function formatTime(seconds){if(!Number.isFinite(seconds))return '—';return `${Math.floor(seconds/60)}:${(seconds%60).toFixed(2).padStart(5,'0')}`;}
+export function formatTime(seconds){if(!Number.isFinite(seconds))return '—';const ticks=Math.round(Math.max(0,seconds)*100);return `${Math.floor(ticks/6000)}:${(Math.floor(ticks/100)%60).toString().padStart(2,'0')}.${(ticks%100).toString().padStart(2,'0')}`;}
