@@ -2,7 +2,7 @@
 
 [Play Blue Rush](https://hex-aragon.github.io/blue-rush/) · [Source repository](https://github.com/hex-aragon/blue-rush)
 
-A standalone Three.js underwater arcade racer. Follow a looping rail, dodge wildlife, jump low obstacles, bank boost energy, and finish three laps against three pacers.
+A standalone Three.js underwater arcade racer. Follow a looping rail, dodge wildlife, jump low obstacles, bank boost energy, and finish three laps against three competitive AI riders.
 
 ## Play
 
@@ -23,7 +23,7 @@ Mint lightning banks 35 energy; clean obstacle passes bank 10 each, and charged 
 - **심해의 궤도**: entirely underwater, glowing jellyfish and deeper rock gardens.
 - **노을 웨이브**: mostly surface racing with a shallow dive.
 
-Three laps per race, three computer riders, ranking, lap splits and personal best saved locally by course. Computer riders steer around obstacles, jump low hazards and continuously adjust pace to keep the race close without teleporting; this release has no online multiplayer or global leaderboard. Course distances/depths and the submersible are fictional arcade representations.
+Three laps per race, three computer riders, ranking, lap splits and personal best saved locally by course. Computer riders predict moving hazards, steer/brake/jump, collect their own pickups and spend earned energy on overtaking bursts; this release has no online multiplayer or global leaderboard. Course distances/depths and the submersible are fictional arcade representations.
 
 ## Development
 
@@ -75,3 +75,11 @@ Actual travel speed, smoothly widened camera view, larger twin-jet wake and spee
 Choose your rider before starting: 펭대리 (penguin with a holiday cap and snorkel), 물개 회장 (seal with whiskers and a coral bow tie), 고등어 씨 (oversized googly-eyed fish head on a human rider), or 잠수 알바 (the original helmeted diver). All four ride the existing aqua-bike, lean into turns and jump; character choice is cosmetic and does not change speed or collision cores.
 
 The three unselected characters become the opponents, with matching name labels and distinct bike colors. Selection persists locally when storage is available, and invalid stored selections fall back to the penguin. The menu updates its 3D rider when a character is selected. Character switches preserve the player's shield mesh and release the previous bikes' private geometry; mesh batching also releases orphaned source geometry.
+
+
+## v1.5 — moving hazards, ambushes and competitive AI
+
+- Small fish dart ±1.25 m at a faster rhythm; medium coral crabs patrol ±1.8 m with animated claws. All lateral movement is shared with collision prediction. Rows retain an item-marked safe lane and the existing boosted-speed steering allowance.
+- Every fifth hazard row has one large ambush shark instead of the usual pair. The first approaching racer triggers a world-space orange ring, rising bubbles and a short sound/HUD warning from at least 96 m away (more at high speed). After 0.65 s it rises from below in 0.3 s. Hidden creatures are intangible; collision follows the visible body once it has nearly emerged. Each lap has its own shared activation, and pause freezes the sequence. The giant leaves adjacent escape lanes.
+- Player and AI use the same acceleration, steering, gravity, forgiving swept collision, shield, slow, pickup and boost engine. AI predicts animal positions at arrival, weighs safe/pickup lanes, changes lanes around opponents, jumps low hazards and brakes when necessary. Pickups and dodge rewards are tracked separately per racer, like personal arcade item opportunities.
+- Earned fuel powers visible BOOST overtakes; competitors use shorter boost cooldowns on the last lap. They modulate ordinary throttle/brake inputs to keep nearby and never teleport or rewrite distance. AI can be hit and lose shields. Character choices and player controls are unchanged.

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {hazardStage} from './hazards.js';
 import {characterLineup} from './characters.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {Sky} from 'three/addons/objects/Sky.js';
@@ -113,7 +114,8 @@ export class RaceScene{
   for(let d=100;d<track.length;d+=180){const f=track.sample(d,23);if(f.p.y>-8)continue;const ray=new T.Mesh(new T.CylinderGeometry(1,7,55,10,1,true),rayMat);ray.position.copy(f.p);ray.position.y+=17;ray.rotation.z=.25;this.courseGroup.add(ray);}
   batch(this.courseGroup,new Set([...this.fish.map(f=>f.mesh),...this.kelp.map(k=>k.mesh),...this.jellies.map(j=>j.mesh)]));
  }
- setObjects(objects){releasePrivate(this.objectGroup);this.objects=objects.map(o=>{const mesh=makeObject(o.type);mesh.traverse(m=>{if(m.isMesh){m.castShadow=true;m.receiveShadow=true;}});this.objectGroup.add(mesh);return {o,mesh};});}
+ setObjects(objects){releasePrivate(this.objectGroup);this.objects=objects.map(o=>{const mesh=makeObject(o.type),sources=new Set();mesh.traverse(m=>{if(m.geometry&&!m.geometry.userData.shared)sources.add(m.geometry);});if(o.type==='crab')batch(mesh,new Set(mesh.userData.claws));if(o.type==='breacher'){const tails=new Set();mesh.userData.breachBody.traverse(m=>{if(m.userData.tail)tails.add(m.userData.tail);});batch(mesh.userData.breachBody,tails);}
+ mesh.traverse(m=>{if(m.geometry)sources.delete(m.geometry);if(m.isMesh){m.castShadow=true;m.receiveShadow=true;}});for(const geo of sources)geo.dispose();this.objectGroup.add(mesh);return {o,mesh};});}
  pose(mesh,distance,x,time,jump=0,steer=0,speed=0){
   const f=craftFrame(this.track,distance,x,time),surface=f.surface;
   mesh.position.copy(f.p);mesh.position.y+=jump;
@@ -124,13 +126,20 @@ export class RaceScene{
   this.seabed.caustics.value=t;const distance=menu?0:s.distance,steer=s.vx/14;
   const {f,surface}=this.pose(this.craft,distance,menu?0:s.x,t,menu?0:s.jump,menu?0:steer+(s.wasDrift?Math.sign(s.vx)*1.4:0),s.speed);
   this.bubbleShield.visible=!menu&&s.shield>0;this.craft.visible=menu||s.invulnerable<=0||Math.floor(t*14)%2===0;
-  this.rivals.forEach((m,i)=>{const r=s.rivals[i];m.visible=true;this.pose(m,menu?12+i*8:r.distance,menu?(i-1)*5:r.x??r.lane*5,t,menu?0:r.jump||0,menu?0:r.steer||0,r.pace??r.speed);});
+  this.rivals.forEach((m,i)=>{const r=s.rivals[i];m.visible=menu||r.invulnerable<=0||Math.floor(t*10)%2===0;this.pose(m,menu?12+i*8:r.distance,menu?(i-1)*5:r.x??r.lane*5,t,menu?0:r.jump||0,menu?0:r.steer||0,r.pace??r.speed);});
   const lap=Math.floor(s.distance/s.length);
   for(const {o,mesh}of this.objects){const delta=mod(o.d-mod(s.distance,s.length)+s.length/2,s.length)-s.length/2,objLap=lap+(o.d<mod(s.distance,s.length)&&delta>0?1:o.d>mod(s.distance,s.length)&&delta<0?-1:0);
    mesh.visible=!s.consumed.has(`${objLap}:${o.id}`)&&Math.abs(delta)<180;if(!mesh.visible)continue;
-   const frame=this.track.sample(o.d,objectXAt(o,s.time));mesh.position.copy(frame.p);mesh.position.y+=objectHeightAt(o,s.time);
-   mesh.rotation.y=Math.atan2(frame.t.x,frame.t.z)+(['shark','fish'].includes(o.type)?Math.PI/2:0);if(mesh.userData.spin)mesh.rotation.z=Math.sin(t*1.4)*.2;
-   mesh.traverse(m=>{if(m.userData.tail)m.userData.tail.rotation.y=Math.sin(t*5+o.id)*.35;});
+   const frame=this.track.sample(o.d,objectXAt(o,s.time)),stage=hazardStage(s,o,objLap);
+   mesh.position.copy(frame.p);mesh.position.y+=o.type==='breacher'?1.4:objectHeightAt(o,s.time);
+   mesh.rotation.y=Math.atan2(frame.t.x,frame.t.z)+(['shark','fish','breacher'].includes(o.type)?Math.PI/2:0);if(mesh.userData.spin)mesh.rotation.z=Math.sin(t*1.4)*.2;
+   if(o.type==='crab')mesh.userData.claws.forEach((claw,i)=>claw.rotation.x=Math.sin(s.time*3+i)*.3);
+   if(o.type==='breacher'){
+    mesh.userData.breachBody.visible=stage.rise>0;mesh.userData.breachBody.position.y=objectHeightAt(o,s.time,stage)-1.4;
+    const warning=mesh.userData.warning;warning.visible=stage.warning;warning.position.y=-.9;
+    warning.children.forEach(bubble=>{if(bubble.userData.bubble!==undefined){const i=bubble.userData.bubble;bubble.position.y=((s.time*2.5+i*.3)%2.8);bubble.scale.setScalar(.08+(i%3)*.035);}});
+   }
+   mesh.traverse(m=>{if(m.userData.tail)m.userData.tail.rotation.y=Math.sin(s.time*(o.type==='fish'?9:5)+o.id)*.35;});
   }
   this.fish.forEach(({mesh,origin,phase,shark})=>{mesh.visible=mesh.position.distanceTo(this.camera.position)<115;mesh.position.x=origin.x+Math.sin(t*.18+phase)*9;mesh.position.y=origin.y+Math.sin(t*.6+phase);mesh.rotation.y=Math.cos(t*.18+phase)>0?-Math.PI/2:Math.PI/2;mesh.userData.tail.rotation.y=Math.sin(t*(shark?3:7)+phase)*.3;});
   this.jellies.forEach(({mesh,y,phase})=>{mesh.visible=mesh.position.distanceTo(this.camera.position)<120;mesh.position.y=y+Math.sin(t*.9+phase);mesh.scale.setScalar(1+Math.sin(t*2+phase)*.07);});
@@ -152,7 +161,7 @@ export class RaceScene{
   if(!menu&&s.speed>2){this.history.unshift(this.craft.position.clone().addScaledVector(forward,-2.7));if(this.history.length>60)this.history.pop();}
   this.trail.visible=!menu&&(under||s.boost>0);let bubbleCount=0;
   this.history.forEach((p,i)=>{for(const side of [-1,1]){this.dummy.position.copy(p).addScaledVector(f.right,side*(.4+i*.025));this.dummy.position.y+=i*.018+Math.sin(i*2+t)*.08;this.dummy.scale.setScalar((1-i/60)*(.07+(i%4)*.02)*(s.boost>0?1.9:s.throttle?1.4:1));this.dummy.updateMatrix();this.trail.setMatrixAt(bubbleCount++,this.dummy.matrix);}});this.trail.count=bubbleCount;this.trail.instanceMatrix.needsUpdate=true;
-  let visibleRivals=0;this.rivalNames.forEach((el,i)=>{const m=this.rivals[i],p=m.position.clone().add(new T.Vector3(0,4.4,0)).project(this.camera),range=m.position.distanceTo(this.craft.position);const visible=!menu&&range<95&&p.z<1&&Math.abs(p.x)<.94&&Math.abs(p.y)<.9;el.hidden=!visible;if(visible){visibleRivals++;el.style.transform=`translate(-50%,-100%) translate(${(p.x*.5+.5)*innerWidth}px,${(-p.y*.5+.5)*innerHeight}px)`;}});
+  let visibleRivals=0;this.rivalNames.forEach((el,i)=>{const m=this.rivals[i],p=m.position.clone().add(new T.Vector3(0,4.4,0)).project(this.camera),range=m.position.distanceTo(this.craft.position);const rival=s.rivals[i];el.textContent=m.name+(rival.boost>0?' · BOOST':rival.jump>1?' · 점프':'');el.classList.toggle('rival-boost',rival.boost>0);const visible=!menu&&range<120&&p.z<1&&Math.abs(p.x)<.94&&Math.abs(p.y)<.9;el.hidden=!visible;if(visible){visibleRivals++;el.style.transform=`translate(-50%,-100%) translate(${(p.x*.5+.5)*innerWidth}px,${(-p.y*.5+.5)*innerHeight}px)`;}});
   this.renderer.render(this.scene,this.camera);
   return {under,immersion,depth,drawCalls:this.renderer.info.render.calls,visibleRivals};
  }

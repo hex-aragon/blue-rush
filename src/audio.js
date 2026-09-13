@@ -28,7 +28,7 @@ export class OceanAudio{
  }
  cue(type){
   if(!this.enabled||!this.ctx)return;const t=this.ctx.currentTime,o=this.ctx.createOscillator(),gain=this.ctx.createGain();
-  const wet=this.mix.underwater>0;o.type='sine';o.frequency.setValueAtTime(type==='hit'?95:type==='jump'?260:540,t);o.frequency.exponentialRampToValueAtTime(type==='hit'?40:wet?680:950,t+.18);
+  const wet=this.mix.underwater>0;o.type='sine';o.frequency.setValueAtTime(type==='threat'?180:type==='hit'?95:type==='jump'?260:540,t);o.frequency.exponentialRampToValueAtTime(type==='threat'?85:type==='hit'?40:wet?680:950,t+.18);
   gain.gain.setValueAtTime(.06,t);gain.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(gain);gain.connect(this.master);o.start();o.stop(t+.3);o.onended=()=>{o.disconnect();gain.disconnect();};
  }
 }

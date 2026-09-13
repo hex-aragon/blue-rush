@@ -95,6 +95,8 @@ export function makeFish(shark=false,color=0xffc16e){
 }
 export function makeObject(type){
  const g=new T.Group();
+ if(type==='crab')return makeCrab();
+ if(type==='breacher')return makeBreacher();
  if(type==='shark'||type==='fish'){g.add(makeFish(type==='shark'));g.rotation.y=Math.PI/2;}
  else if(type==='rock'){
   const m=new T.Mesh(new T.DodecahedronGeometry(1.9,0),material(0x638785));m.scale.set(1,.78,.75);m.position.y=-.05;g.add(m);
@@ -164,4 +166,28 @@ function makeAnimalRider(kind,color){
   ellipsoid(head,[side*.27,.12,-.51],[.022,.027,.015],0xffffff);
  }
  return {rider,head};
+}
+
+
+function makeCrab(){
+ const g=new T.Group();g.name='patrol-crab';g.userData.claws=[];
+ ellipsoid(g,[0,0,0],[1.5,.8,.9],0xe77b66);
+ ellipsoid(g,[0,.3,.08],[1.35,.55,.78],0xffad6b);
+ for(const side of [-1,1]){
+  for(let i=0;i<3;i++){link(g,[side*.95,-.2,-.45+i*.42],[side*1.8,-.35,-.6+i*.5],.10,0xe77b66);link(g,[side*1.8,-.35,-.6+i*.5],[side*2,-.8,-.65+i*.6],.075,0xd46560);}
+  link(g,[side*.4,.45,-.38],[side*.48,1.03,-.45],.09,0xe77b66);
+  ellipsoid(g,[side*.48,1.06,-.49],[.20,.22,.19],0xfff2c7);ellipsoid(g,[side*.48,1.09,-.66],[.10,.12,.045],0x193c49);
+  link(g,[side*1.1,0,-.3],[side*1.8,.1,-.8],.16,0xe77b66);
+  const claw=new T.Group();claw.position.set(side*1.95,.2,-.9);g.add(claw);g.userData.claws.push(claw);
+  ellipsoid(claw,[0,0,0],[.42,.25,.5],0xffb474);for(const x of [-.2,.2])ellipsoid(claw,[x,.05,-.43],[.12,.20,.35],0xffdf9a);
+ }
+ return g;
+}
+function makeBreacher(){
+ const g=new T.Group();g.name='ambush-giant';
+ const body=new T.Group(),fish=makeFish(true);body.add(fish);body.scale.setScalar(1.45);g.add(body);g.userData.breachBody=body;
+ const warning=new T.Group();warning.name='eruption-warning';g.add(warning);g.userData.warning=warning;
+ const ring=new T.Mesh(new T.TorusGeometry(2.7,.09,6,40),material(0xffb877,1.3));ring.rotation.x=Math.PI/2;warning.add(ring);
+ for(let i=0;i<12;i++){const a=i*Math.PI/6;const bubble=ellipsoid(warning,[Math.cos(a)*1.8,.3+(i%4)*.55,Math.sin(a)*1.1],[.11,.11,.11],0xc0ffee,.4);bubble.userData.bubble=i;}
+ return g;
 }

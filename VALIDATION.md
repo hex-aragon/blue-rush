@@ -38,3 +38,11 @@
 - 53 Node tests pass. New tests cover distinct four-character lineups/fallback, physical marine-head volume and silhouettes, preservation of every model during mesh batching, live rider/head/turbine animation and repeated switching through the actual scene's setRiders method with shield retention, updated rival labels and removal of old bikes.
 - Offline front and rear three-quarter model previews were rendered directly from the Three.js meshes and visually inspected. This checks model shape/placement; it does not reproduce browser lighting, water, UI or performance.
 - Native browser inspection was attempted but the Mac remained locked. No current browser visual/touch verification is claimed.
+
+
+# v1.5 validation
+
+- 61 Node tests pass. Added coverage for distinct small/medium motion ranges and reversal, hidden-giant intangibility, warning/rise/collision synchronization, top-speed reaction time, per-lap activation and pause, safe lanes during active emergence, new 3D body volume and separate warning meshes, AI's real collision/shield/pickup rules, earned booster overtakes and rank changes during a competitive scripted race.
+- Every course completes with actual 3D track elevation, the new threats and finite AI state. Existing wave/audio, rider switching, acceleration, jump and swept collision regressions still pass.
+- Offline 3D mesh previews of fish, crab, giant and warning ring/bubbles were inspected from two angles. This is model inspection, not a browser gameplay or lighting check.
+- Native browser inspection was attempted, but the Mac remains locked; a request to unlock it is pending. No manual v1.5 play, touch, animation timing or listening sign-off is claimed.

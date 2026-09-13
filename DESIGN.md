@@ -29,3 +29,8 @@ Reserve a second compact 98 px mobile control above the right-hand action button
 ## Sea misfits
 
 Four compact character buttons sit between the course description and race-start button. Names and recognizable animal icons provide a quick choice; a short joke identifies each personality. The game itself uses volumetric original models: round dark penguin with a pale belly, orange beak, cap and yellow snorkel; broad gray seal with whiskers and bow tie; oversized teal mackerel head with bulging eyes, pink dorsal fin and puckered lips above a human wetsuit; original diver. Preserve the aqua-bike silhouette and rear-view readability with different head shapes, fins, bibs and bike colors. The original human is intentionally the odd one out. Selection is cosmetic with identical handling.
+
+
+## Tension on the course
+
+Use three readable rhythms: fast small orange fish, slower and wider coral crab patrols, then occasional giant shark ambushes. Mark the actual ambush lane with a warm orange 3D ring and upward bubble column before the creature rises. Keep the safe item lane open. Use one brief low warning cue and a compact minimap status, with no modal, camera shake or full-screen flash. AI boosters receive a bright BOOST suffix on the existing name marker so an approaching pass is readable without another HUD panel.
