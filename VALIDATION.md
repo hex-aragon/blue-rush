@@ -1,4 +1,4 @@
-# Release verification
+# v1.0 browser verification (previous release)
 
 - Node simulation tests: 22 passed, covering all three complete races, lap boundaries, moving hazards, boost/slow expiry, shielding, jump clearance, drift charge/release, lateral rail limits, pause, seeded layout fairness, wave inheritance and multiple steering sources.
 - Production build and artifact scan pass; npm audit reports zero known vulnerabilities at release time.
@@ -10,3 +10,10 @@
 
 - Actual browser full race: finished three laps in 3:48.60, displayed rank 4/4, 24 items and best-lap 1:15.20. Retry returned to a fresh 3-second countdown. Reloaded menu retained the 3:48.60 record.
 - GitHub Actions deployment succeeded. Public HTML and every linked JS/CSS file matched the locally verified build byte for byte.
+
+
+# v1.1 validation
+
+- 30 Node tests cover the original race, physical rider/helmet geometry, transforms after mesh batching, seabed clearance throughout all three courses, terrain normals/height extent, independent rival movement with bounded pack separation, distinct bounded audio waveforms, exclusive surface/underwater mix targets and actual audio-graph mute/pause/re-enable behavior with an AudioContext test double.
+- Local production build and public artifact scan pass.
+- Current native browser and sound inspection was blocked by the Mac lock screen. The previous v1.0 screenshots and browser checks above do not validate this revision. Manual appearance/performance/listening review remains outstanding until the Mac is unlocked.

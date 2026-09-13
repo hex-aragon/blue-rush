@@ -7,3 +7,11 @@ Palette: abyss #062b42, lagoon #137d93, sea glass #94efe1, pearl #eefaf6, signal
 Opening: live 3D course as the entire canvas, compact left-aligned race preparation panel, wide open right-hand view of the submersible and water. In play, only corner instruments and bottom controls; no central warning overlays except starting countdown. Avoid dashboard card grids. The memorable element is the illuminated ribbon descending from the reflective ocean into a living reef.
 
 Review: the palette/HUD intentionally match the existing games rather than an unrelated website template. Keep readable track geometry and foreground clarity; underwater distance fog is spatial depth, with no blur postprocessing. Respect reduced motion by removing camera sway and decorative menu animation.
+
+## Rider and submerged-world revision
+
+Keep the established typography, controls and mint/gold signals. Replace the closed capsule with an open saddle aqua-bike: orange fairings, exposed dark seat, silver twin waterjets, handlebars and a helmeted wetsuit rider. Competitors use blue, rose and lime equipment and lean their bodies into turns.
+
+Underwater the broad translucent road is removed. Physical luminous guide rails float above a continuous sculpted seabed; tall rock outcrops, branching coral, kelp and rock arches provide foreground/background overlap and changing silhouettes. Lower ambient light, directional shadows, focused headlights and the visible underside of the wavy surface establish depth. The camera remains behind and above the rider, with ample room over the bottom controls. No underwater screen image or flat background substitute.
+
+Review: address the flat appearance by geometry, occlusion and lighting rather than stronger full-screen effects. Ocean surface retains the original wave reflection/wake code. Separate surface surf/spray from underwater low-frequency water, motor and individual bubble events, crossfaded with listener immersion. Muting, pausing and tab hiding mute every audio branch.

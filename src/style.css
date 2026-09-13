@@ -8,3 +8,5 @@ body.playing .vignette{background:linear-gradient(180deg,#022b445e,transparent 2
 .race-heading{padding:12px 15px;background:#09364bc9;border:1px solid #a8d3ce35;border-radius:12px;text-shadow:none}
 @media(max-height:780px) and (min-width:701px){.menu{top:95px;max-height:calc(100dvh - 102px)}h1{font-size:65px;margin:15px 0}.intro-copy{margin-bottom:16px;line-height:1.6}.course{padding:9px 12px}.course-description{min-height:40px;font-size:10px}.primary{padding:14px 18px}.help-link{margin-top:12px}.intro-line{font-size:10px}.brief-controls{margin-top:10px}}
 @media(max-width:700px){.race-heading{left:16px;padding:9px 11px}.race-heading>div{gap:5px}.rank{padding-left:8px;margin-left:2px}}
+
+.rival-name{position:fixed;top:0;left:0;z-index:2;pointer-events:none;font-size:10px;padding:3px 7px;border-radius:10px;color:var(--rival-color);background:#0c2f3ec7;border:1px solid #a8d8e13b;text-shadow:0 1px 2px #102a36}

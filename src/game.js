@@ -1,3 +1,4 @@
+import {stepRivals} from './rivals.js';
 // Deterministic simulation. Units: metres, seconds. Rendering is independent.
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export const mod=(v,n)=>((v%n)+n)%n;
@@ -54,10 +55,10 @@ export function stepRace(s,input,dt){
    const targetD=lap*s.length+o.d,key=`${lap}:${o.id}`;
    if(targetD<previous-2||targetD>s.distance+2||s.consumed.has(key))continue;
    const fraction=clamp((targetD-previous)/Math.max(.001,s.distance-previous),0,1),x=oldX+(s.x-oldX)*fraction,jump=oldJump+(s.jump-oldJump)*fraction;
-   if(Math.abs(x-objectXAt(o,s.time))<o.radius+1.05&&jump<o.height){s.consumed.add(key);collect(s,o);}
+   if(Math.abs(x-objectXAt(o,s.time))<o.radius+1.5&&jump<o.height){s.consumed.add(key);collect(s,o);}
   }
  }
- for(let i=0;i<s.rivals.length;i++){const r=s.rivals[i];r.distance+=r.speed*(1+.045*Math.sin(s.time*.5+i*2))*dt;r.distance=Math.min(r.distance,s.length*s.laps);}
+ stepRivals(s,dt);
  const lap=Math.floor(s.distance/s.length);if(lap>previousLap){const split=s.time-s.lapStarted;s.lapTimes.push(split);s.bestLap=Math.min(s.bestLap,split);s.lapStarted=s.time;if(lap<s.laps)emit(s,'lap',`${lap+1}번째 바퀴 · ${s.laps-lap===1?'마지막 스퍼트!':'계속 달려요'}`);}
  if(s.distance>=s.length*s.laps){s.distance=s.length*s.laps;s.phase='finished';s.rank=1+s.rivals.filter(r=>r.distance>=s.distance).length;emit(s,'finish','완주!');}
 }

@@ -1,7 +1,34 @@
+import {audioMix,synthesizeAmbience} from './audio-synthesis.js';
 export class OceanAudio{
- constructor(){this.enabled=false;}
- async enable(){if(!this.ctx){const A=window.AudioContext||window.webkitAudioContext;if(!A)return false;this.ctx=new A();this.gain=this.ctx.createGain();this.gain.gain.value=0;this.gain.connect(this.ctx.destination);this.osc=this.ctx.createOscillator();this.osc.type='sine';this.osc.frequency.value=65;this.engine=this.ctx.createGain();this.engine.gain.value=.065;this.osc.connect(this.engine);this.engine.connect(this.gain);this.osc.start();const n=this.ctx.sampleRate*3,buffer=this.ctx.createBuffer(1,n,this.ctx.sampleRate),data=buffer.getChannelData(0);let last=0;for(let i=0;i<n;i++){last=(last+(Math.random()*2-1)*.025)/1.025;data[i]=last*2;}this.noise=this.ctx.createBufferSource();this.noise.buffer=buffer;this.noise.loop=true;this.filter=this.ctx.createBiquadFilter();this.filter.type='lowpass';this.filter.frequency.value=550;this.noise.connect(this.filter);this.filter.connect(this.gain);this.noise.start();}await this.ctx.resume();this.enabled=true;return true;}
- disable(){this.enabled=false;if(this.ctx)this.gain.gain.setTargetAtTime(0,this.ctx.currentTime,.1);}
- update(speed,under,active){if(!this.ctx)return;this.gain.gain.setTargetAtTime(this.enabled&&active?.24:0,this.ctx.currentTime,.2);this.osc.frequency.setTargetAtTime(48+speed*1.5,this.ctx.currentTime,.1);this.filter.frequency.setTargetAtTime(under?250:700,this.ctx.currentTime,.3);}
- cue(type){if(!this.enabled||!this.ctx)return;const t=this.ctx.currentTime,o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(type==='hit'?130:type==='jump'?380:660,t);o.frequency.exponentialRampToValueAtTime(type==='hit'?60:990,t+.2);g.gain.setValueAtTime(.035,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(g);g.connect(this.gain);o.start();o.stop(t+.31);}
+ constructor(){this.enabled=false;this.mix=audioMix(0,0,false);}
+ async enable(){
+  if(!this.ctx){
+   const A=window.AudioContext||window.webkitAudioContext;if(!A)return false;this.ctx=new A();
+   this.master=this.ctx.createGain();this.master.gain.value=0;
+   const limiter=this.ctx.createDynamicsCompressor();limiter.threshold.value=-12;limiter.ratio.value=5;this.master.connect(limiter);limiter.connect(this.ctx.destination);
+   const data=synthesizeAmbience(this.ctx.sampleRate);this.layers={};
+   for(const name of ['surface','underwater','bubbles']){
+    const buffer=this.ctx.createBuffer(1,data[name].length,this.ctx.sampleRate);buffer.getChannelData(0).set(data[name]);
+    const source=this.ctx.createBufferSource();source.buffer=buffer;source.loop=true;
+    const gain=this.ctx.createGain();gain.gain.value=0;source.connect(gain);gain.connect(this.master);source.start();this.layers[name]=gain;
+   }
+   this.motor=this.ctx.createOscillator();this.motor.type='triangle';this.motor.frequency.value=58;
+   this.motorFilter=this.ctx.createBiquadFilter();this.motorFilter.type='lowpass';this.motorFilter.frequency.value=400;
+   this.motorGain=this.ctx.createGain();this.motorGain.gain.value=0;this.motor.connect(this.motorFilter);this.motorFilter.connect(this.motorGain);this.motorGain.connect(this.master);this.motor.start();
+  }
+  await this.ctx.resume();this.enabled=true;return true;
+ }
+ disable(){this.enabled=false;if(this.ctx)this.master.gain.setTargetAtTime(0,this.ctx.currentTime,.06);}
+ update(speed,immersion,active){
+  this.mix=audioMix(immersion,speed,active&&this.enabled);if(!this.ctx)return;
+  const now=this.ctx.currentTime;this.master.gain.setTargetAtTime(this.enabled&&active?.6:0,now,.08);
+  for(const name of ['surface','underwater','bubbles'])this.layers[name].gain.setTargetAtTime(this.mix[name],now,.18);
+  this.motorGain.gain.setTargetAtTime(this.mix.motor,now,.12);this.motor.frequency.setTargetAtTime(this.mix.motorHz,now,.1);
+  this.motorFilter.frequency.setTargetAtTime(immersion>.5?220:850,now,.2);
+ }
+ cue(type){
+  if(!this.enabled||!this.ctx)return;const t=this.ctx.currentTime,o=this.ctx.createOscillator(),gain=this.ctx.createGain();
+  const wet=this.mix.underwater>0;o.type='sine';o.frequency.setValueAtTime(type==='hit'?95:type==='jump'?260:540,t);o.frequency.exponentialRampToValueAtTime(type==='hit'?40:wet?680:950,t+.18);
+  gain.gain.setValueAtTime(.06,t);gain.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(gain);gain.connect(this.master);o.start();o.stop(t+.3);o.onended=()=>{o.disconnect();gain.disconnect();};
+ }
 }
