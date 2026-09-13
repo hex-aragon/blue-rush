@@ -15,3 +15,8 @@ Keep the established typography, controls and mint/gold signals. Replace the clo
 Underwater the broad translucent road is removed. Physical luminous guide rails float above a continuous sculpted seabed; tall rock outcrops, branching coral, kelp and rock arches provide foreground/background overlap and changing silhouettes. Lower ambient light, directional shadows, focused headlights and the visible underside of the wavy surface establish depth. The camera remains behind and above the rider, with ample room over the bottom controls. No underwater screen image or flat background substitute.
 
 Review: address the flat appearance by geometry, occlusion and lighting rather than stronger full-screen effects. Ocean surface retains the original wave reflection/wake code. Separate surface surf/spray from underwater low-frequency water, motor and individual bubble events, crossfaded with listener immersion. Muting, pausing and tab hiding mute every audio branch.
+
+
+## Banked acceleration
+
+Place the mint acceleration button and charge gauge directly above the two steering buttons, leaving the existing right-hand actions and central speed readout in place. The compact 98 px mobile width preserves the gap around the speedometer on narrow phones. Fuel-ready mint and active pale gold distinguish stored energy from a running burst. Acceleration changes physical speed, smooth camera field of view and the 3D wake; never add blur over the rider. Safe lanes carry items, with wider row spacing and no sudden two-lane switches.

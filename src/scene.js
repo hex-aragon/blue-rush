@@ -4,7 +4,7 @@ import {Sky} from 'three/addons/objects/Sky.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {createWater} from './legacy/water.js';
 import {FoamWake} from './legacy/foam.js';
-import {waveHeight} from './legacy/physics.js';
+import {craftFrame,objectHeightAt} from './collision.js';
 import {makeCraft,animateCraft,makeFish,makeObject,ellipsoid,cube,material} from './models.js';
 import {buildSeabed,makeSurfaceUnderside} from './underwater.js';
 import {mod,random,objectXAt} from './game.js';
@@ -98,7 +98,7 @@ export class RaceScene{
  }
  setObjects(objects){releasePrivate(this.objectGroup);this.objects=objects.map(o=>{const mesh=makeObject(o.type);mesh.traverse(m=>{if(m.isMesh){m.castShadow=true;m.receiveShadow=true;}});this.objectGroup.add(mesh);return {o,mesh};});}
  pose(mesh,distance,x,time,jump=0,steer=0,speed=0){
-  const f=this.track.sample(distance,x),surface=f.p.y>-.9;if(surface)f.p.y=waveHeight(f.p.x,f.p.z,time,.7)+.08;
+  const f=craftFrame(this.track,distance,x,time),surface=f.surface;
   mesh.position.copy(f.p);mesh.position.y+=jump;
   mesh.rotation.set(Math.asin(f.t.y)*.8,Math.atan2(-f.t.x,-f.t.z)+steer*.11,-steer*.12,'YXZ');
   animateCraft(mesh,{steer,jump,time,speed});return {f,surface};
@@ -111,7 +111,7 @@ export class RaceScene{
   const lap=Math.floor(s.distance/s.length);
   for(const {o,mesh}of this.objects){const delta=mod(o.d-mod(s.distance,s.length)+s.length/2,s.length)-s.length/2,objLap=lap+(o.d<mod(s.distance,s.length)&&delta>0?1:o.d>mod(s.distance,s.length)&&delta<0?-1:0);
    mesh.visible=!s.consumed.has(`${objLap}:${o.id}`)&&Math.abs(delta)<180;if(!mesh.visible)continue;
-   const frame=this.track.sample(o.d,objectXAt(o,s.time));mesh.position.copy(frame.p);mesh.position.y+=(['boost','shield'].includes(o.type)?2.1:1.4)+(['fish','shark'].includes(o.type)?Math.sin(t*2+o.phase)*.25:0);
+   const frame=this.track.sample(o.d,objectXAt(o,s.time));mesh.position.copy(frame.p);mesh.position.y+=objectHeightAt(o,s.time);
    mesh.rotation.y=Math.atan2(frame.t.x,frame.t.z)+(['shark','fish'].includes(o.type)?Math.PI/2:0);if(mesh.userData.spin)mesh.rotation.z=Math.sin(t*1.4)*.2;
    mesh.traverse(m=>{if(m.userData.tail)m.userData.tail.rotation.y=Math.sin(t*5+o.id)*.35;});
   }
@@ -121,7 +121,8 @@ export class RaceScene{
   const forward=f.t.clone();forward.y=0;forward.normalize();
   if(menu){const desired=this.craft.position.clone().add(new T.Vector3(10,6.5,12));this.camera.position.lerp(desired,this.snap?1:.04);this.camera.lookAt(this.craft.position.clone().add(new T.Vector3(-6,2,-8)));}
   else{const mobile=innerWidth<700,back=mobile?17:13;const desired=this.craft.position.clone().addScaledVector(forward,-back);desired.y=f.p.y+T.MathUtils.lerp(mobile?7.6:6.0,mobile?5.6:4.3,smooth(.5,4,-f.p.y))+s.jump*.3;this.camera.position.lerp(desired,this.snap?1:1-Math.exp(-dt*7));const target=this.craft.position.clone().addScaledVector(forward,12);target.y=f.p.y+2.5;this.camera.lookAt(target);}
-  this.camera.fov=(innerWidth<700?67:62)+(s.boost>0&&!this.reduced?4:0);this.camera.updateProjectionMatrix();this.snap=false;
+  const rush=!menu&&!this.reduced?Math.max(0,Math.min(1,(s.speed/s.course.speed-1)/.75)):0;
+  const targetFov=(innerWidth<700?67:62)+rush*9;this.camera.fov=this.snap?targetFov:T.MathUtils.lerp(this.camera.fov,targetFov,1-Math.exp(-dt*5));this.camera.updateProjectionMatrix();this.snap=false;
   const under=this.camera.position.y<-.2,immersion=smooth(.15,2,-this.camera.position.y),depth=Math.max(0,-this.craft.position.y);
   this.water.visible=!under;this.underside.visible=under;this.underside.material.uniforms.time.value=t;this.sky.visible=!under;
   this.scene.background.set(under?(this.course.id==='abyss'?0x062739:0x0a4251):0x85c6d9);this.scene.fog.color.copy(this.scene.background);this.scene.fog.density=under?.009:.0016;
@@ -133,7 +134,7 @@ export class RaceScene{
   if(surface&&!menu){const p=this.craft.position;this.foam.update({x:p.x,z:p.z,heading:Math.atan2(f.t.x,-f.t.z),speed:s.speed,heave:p.y-s.jump,pitch:0,roll:0,rudder:steer,jumpHeight:s.jump,throttle:1},{kind:'jetski',length:5.6,beam:2.3,draft:.4},t,.7);}else this.foam.reset();
   if(!menu&&s.speed>2){this.history.unshift(this.craft.position.clone().addScaledVector(forward,-2.7));if(this.history.length>60)this.history.pop();}
   this.trail.visible=!menu&&(under||s.boost>0);let bubbleCount=0;
-  this.history.forEach((p,i)=>{for(const side of [-1,1]){this.dummy.position.copy(p).addScaledVector(f.right,side*(.4+i*.025));this.dummy.position.y+=i*.018+Math.sin(i*2+t)*.08;this.dummy.scale.setScalar((1-i/60)*(.07+(i%4)*.02));this.dummy.updateMatrix();this.trail.setMatrixAt(bubbleCount++,this.dummy.matrix);}});this.trail.count=bubbleCount;this.trail.instanceMatrix.needsUpdate=true;
+  this.history.forEach((p,i)=>{for(const side of [-1,1]){this.dummy.position.copy(p).addScaledVector(f.right,side*(.4+i*.025));this.dummy.position.y+=i*.018+Math.sin(i*2+t)*.08;this.dummy.scale.setScalar((1-i/60)*(.07+(i%4)*.02)*(s.boost>0?1.7:1));this.dummy.updateMatrix();this.trail.setMatrixAt(bubbleCount++,this.dummy.matrix);}});this.trail.count=bubbleCount;this.trail.instanceMatrix.needsUpdate=true;
   let visibleRivals=0;this.rivalNames.forEach((el,i)=>{const m=this.rivals[i],p=m.position.clone().add(new T.Vector3(0,4.4,0)).project(this.camera),range=m.position.distanceTo(this.craft.position);const visible=!menu&&range<95&&p.z<1&&Math.abs(p.x)<.94&&Math.abs(p.y)<.9;el.hidden=!visible;if(visible){visibleRivals++;el.style.transform=`translate(-50%,-100%) translate(${(p.x*.5+.5)*innerWidth}px,${(-p.y*.5+.5)*innerHeight}px)`;}});
   this.renderer.render(this.scene,this.camera);
   return {under,immersion,depth,drawCalls:this.renderer.info.render.calls,visibleRivals};

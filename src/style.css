@@ -10,3 +10,12 @@ body.playing .vignette{background:linear-gradient(180deg,#022b445e,transparent 2
 @media(max-width:700px){.race-heading{left:16px;padding:9px 11px}.race-heading>div{gap:5px}.rank{padding-left:8px;margin-left:2px}}
 
 .rival-name{position:fixed;top:0;left:0;z-index:2;pointer-events:none;font-size:10px;padding:3px 7px;border-radius:10px;color:var(--rival-color);background:#0c2f3ec7;border:1px solid #a8d8e13b;text-shadow:0 1px 2px #102a36}
+
+/* A separate throttle row keeps all four actions reachable on narrow phones. */
+.steering-stack{display:flex;flex-direction:column;gap:9px}
+.control-deck #boost{width:143px;height:57px;text-align:left;padding:8px 13px;border-color:#9cebd890;background:#123f50}
+#boost>span{display:block}#boost small{font-size:8px;font-weight:400;opacity:.75;margin-left:7px}#boost-status{font-size:9px;font-variant-numeric:tabular-nums;margin-top:4px;color:#b8dcd5}
+#boost-fill{position:absolute;bottom:0;left:0;width:0;height:5px;background:#8fefd4;transition:width .12s}
+.control-deck #boost.ready{background:#9cebd8;color:#0b3946;border-color:#d1fff0}#boost.ready #boost-status{color:#285c60}#boost.ready #boost-fill{background:#267d74}
+.control-deck #boost.boosting{background:#e8ffcf;color:#193e35;border-color:#edffd8;box-shadow:0 0 22px #a1f1d13b}#boost.boosting #boost-status{color:#285c60}
+@media(max-width:700px){.steering-stack{gap:8px}.control-deck #boost{width:98px;height:54px;padding:7px 9px;font-size:12px}#boost small{font-size:7px;margin-left:3px}#boost-status{font-size:9px}}
