@@ -26,3 +26,7 @@ body.playing .vignette{background:linear-gradient(180deg,#022b445e,transparent 2
 #throttle-fill{position:absolute;bottom:0;left:0;height:5px;width:0;background:#eaffbf;transition:width .1s}
 .control-deck #throttle.held{background:#eaffbf;border-color:#f3ffd9;box-shadow:0 0 25px #b6ffdc55}
 @media(max-width:700px){.action-stack{gap:8px}.control-deck #throttle{width:98px;height:54px;font-size:12px;padding:7px 8px}#throttle small{font-size:7px;margin-left:2px}.brief-controls{flex-wrap:wrap;gap:5px 10px}}
+
+.rider-picker{margin:15px 0}.rider-picker .section-line{margin-bottom:8px}.rider-picker .section-line h2{font-size:12px}.rider-picker .section-line>span{font-size:9px}
+#characters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.character{border:1px solid #a6d9cd45;background:#123e52d9;border-radius:10px;padding:7px 3px;text-align:center}.character>span{display:block;font-size:25px;line-height:1.2;margin-bottom:5px}.character strong{display:block;font-size:10px;font-weight:650}.character[aria-pressed=true]{background:#cdf6e9;border-color:#e0fff1;color:#164455}.character[aria-pressed=true] strong::after{content:' ✓';font-size:9px}#character-description{font-size:10px;color:#c1dcda;margin:8px 0 0;min-height:15px}
+@media(max-height:850px) and (min-width:701px){.menu .intro-copy{margin-bottom:12px}.menu h1{font-size:60px;margin:12px 0}.menu .rider-picker{margin:10px 0}.menu .course-description{min-height:32px}.menu .character>span{font-size:22px}.menu .character{padding:5px 2px}}

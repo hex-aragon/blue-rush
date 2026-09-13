@@ -1,19 +1,30 @@
 import './style.css';
+import {CHARACTERS,characterById,characterLineup} from './characters.js';
 import {COURSES,createRace,stepRace,position,formatTime,mod,BOOST_COST,BOOST_DURATION} from './game.js';
 import {createTrack} from './track.js';
 import {RaceScene} from './scene.js';
 import {bindRaceSteering} from './legacy/race-controls.js';
 import {OceanAudio} from './audio.js';
+function savedCharacter(){try{return characterById(localStorage.getItem('blue-rush.character')).id;}catch{return CHARACTERS[0].id;}}
+let selectedCharacter=savedCharacter();
 const $=s=>document.querySelector(s);const audio=new OceanAudio();let course=COURSES[0],track=createTrack(course),race=createRace({track,length:track.length,course}),scene,menu=true,quality='high',lastEvent=null,noticeUntil=0,pausedFrom='racing',frameTime=0,last=performance.now(),lastHud=0;
 const keys=new Set(),held=new Map();let steering,jumpQueued=false,boostQueued=false;
 function records(){try{const p=JSON.parse(localStorage.getItem('blue-rush.records.v1')||'{}');return p&&typeof p==='object'?p:{};}catch{return {};}}
 function recordText(){const r=records()[course.id];$('#record').textContent=r&&Number.isFinite(r.time)?`나의 최고 기록 ${formatTime(r.time)}`:'첫 기록을 남겨 보세요';}
-function choose(id){course=COURSES.find(c=>c.id===id)||COURSES[0];track=createTrack(course);race=createRace({track,length:track.length,course});scene?.setTrack(track,course);scene?.setObjects(race.objects);document.querySelectorAll('.course').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===id)));$('#course-description').textContent=course.description;recordText();drawMap();}
+function syncRiders(){const lineup=characterLineup(selectedCharacter);race.character=lineup[0].id;race.rivals.forEach((r,i)=>{r.name=lineup[i+1].name;r.character=lineup[i+1].id;});}
+function choose(id){course=COURSES.find(c=>c.id===id)||COURSES[0];track=createTrack(course);race=createRace({track,length:track.length,course});scene?.setTrack(track,course);scene?.setObjects(race.objects);syncRiders();document.querySelectorAll('.course').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===id)));$('#course-description').textContent=course.description;recordText();drawMap();}
 $('#courses').innerHTML=COURSES.map((c,i)=>`<button class="course" data-id="${c.id}" aria-pressed="${i===0}"><span class="course-marker">${['≈','◌','☀'][i]}</span><span><strong>${c.name}</strong><small>${c.tag}</small></span><span class="difficulty">${c.difficulty}</span></button>`).join('');
 $('#courses').addEventListener('click',e=>{const b=e.target.closest('.course');if(b)choose(b.dataset.id);});
+$('#characters').innerHTML=CHARACTERS.map(c=>`<button class="character" data-character="${c.id}" aria-pressed="false"><span aria-hidden="true">${c.emoji}</span><strong>${c.name}</strong></button>`).join('');
+function chooseCharacter(id){const c=characterById(id);selectedCharacter=c.id;scene?.setRiders(c.id);syncRiders();
+ document.querySelectorAll('.character').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.character===c.id)));
+ $('#character-description').textContent=c.tag;$('#scene-caption p').innerHTML=`${c.name}<small>${c.tag}</small>`;
+ try{localStorage.setItem('blue-rush.character',c.id);}catch{}
+}
+$('#characters').addEventListener('click',e=>{const b=e.target.closest('.character');if(b&&menu)chooseCharacter(b.dataset.character);});
 function clearInput(){race.throttle=false;jumpQueued=false;boostQueued=false;keys.clear();held.clear();steering?.reset();document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'));}
 function closeDialogs(){document.querySelectorAll('dialog[open]').forEach(d=>d.close());}
-function start(){if(!scene)return;closeDialogs();clearInput();menu=false;lastEvent=null;noticeUntil=0;$('#notice').textContent='';$('#notice').classList.remove('show');race=createRace({track,length:track.length,course,seed:crypto.getRandomValues(new Uint32Array(1))[0]});scene.setObjects(race.objects);scene.foam.reset();scene.history=[];scene.snap=true;$('#menu').hidden=true;$('#scene-caption').hidden=true;$('#hud').hidden=false;$('#pause').hidden=false;document.body.classList.add('playing');$('#course-label').textContent=course.name;scene.renderer.domElement.focus();}
+function start(){if(!scene)return;closeDialogs();clearInput();menu=false;lastEvent=null;noticeUntil=0;$('#notice').textContent='';$('#notice').classList.remove('show');race=createRace({track,length:track.length,course,seed:crypto.getRandomValues(new Uint32Array(1))[0]});scene.setObjects(race.objects);syncRiders();scene.foam.reset();scene.history=[];scene.snap=true;$('#menu').hidden=true;$('#scene-caption').hidden=true;$('#hud').hidden=false;$('#pause').hidden=false;document.body.classList.add('playing');$('#course-label').textContent=course.name;scene.renderer.domElement.focus();}
 function showMenu(){closeDialogs();clearInput();menu=true;race.phase='menu';$('#menu').hidden=false;$('#scene-caption').hidden=false;$('#hud').hidden=true;$('#pause').hidden=true;document.body.classList.remove('playing');scene.snap=true;recordText();$('#start').focus();}
 function pause(){if(menu||!['racing','countdown'].includes(race.phase))return;pausedFrom=race.phase;race.phase='paused';clearInput();$('#pause-dialog').showModal();audio.update(0,false,false);}
 function resume(){if(race.phase!=='paused')return;$('#pause-dialog').close();clearInput();race.phase=pausedFrom;scene.renderer.domElement.focus();last=performance.now();}
@@ -41,9 +52,9 @@ function hud(info){$('#lap').innerHTML=`${Math.min(race.laps,Math.floor(race.dis
  $('#boost').classList.toggle('ready',canBoost);$('#boost').classList.toggle('boosting',boosting);$('#boost').setAttribute('aria-pressed',String(boosting));
  $('#boost').setAttribute('aria-label',`부스터 · 잔량 ${Math.round(race.energy)} / 100 · 한 번에 25 사용${canBoost?' · 사용 가능':''}`);
  const event=race.events.at(-1);if(event&&event!==lastEvent){lastEvent=event;if(event.type!=='jump'){$('#notice').textContent=event.text;noticeUntil=frameTime+2.1;}audio.cue(event.type);}$('#notice').classList.toggle('show',frameTime<noticeUntil);drawMap();
- Object.assign(scene.renderer.domElement.dataset,{phase:race.phase,throttle:String(race.throttle),speed:race.speed.toFixed(2),jump:race.jump.toFixed(2),distance:race.distance.toFixed(2),x:race.x.toFixed(2),underwater:String(info.under),boost:race.boost.toFixed(2),energy:String(race.energy),hits:String(race.hits),dodges:String(race.dodges),boosts:String(race.boosts),drift:race.drift.toFixed(2),drawCalls:String(info.drawCalls),rider:'aqua-bike',visibleRivals:String(info.visibleRivals),immersion:info.immersion.toFixed(2),audioSurface:audio.mix.surface.toFixed(3),audioUnderwater:audio.mix.underwater.toFixed(3),audioBubbles:audio.mix.bubbles.toFixed(3)});
+ Object.assign(scene.renderer.domElement.dataset,{phase:race.phase,throttle:String(race.throttle),speed:race.speed.toFixed(2),jump:race.jump.toFixed(2),distance:race.distance.toFixed(2),x:race.x.toFixed(2),underwater:String(info.under),boost:race.boost.toFixed(2),energy:String(race.energy),hits:String(race.hits),dodges:String(race.dodges),boosts:String(race.boosts),drift:race.drift.toFixed(2),drawCalls:String(info.drawCalls),rider:race.character||selectedCharacter,visibleRivals:String(info.visibleRivals),immersion:info.immersion.toFixed(2),audioSurface:audio.mix.surface.toFixed(3),audioUnderwater:audio.mix.underwater.toFixed(3),audioBubbles:audio.mix.bubbles.toFixed(3)});
 }
-try{scene=new RaceScene($('#world'),track,course);scene.setObjects(race.objects);choose(course.id);}catch(e){console.error(e);$('#error').hidden=false;$('#start').disabled=true;}
+try{scene=new RaceScene($('#world'),track,course);scene.setObjects(race.objects);choose(course.id);chooseCharacter(selectedCharacter);}catch(e){console.error(e);$('#error').hidden=false;$('#start').disabled=true;}
 function loop(now){requestAnimationFrame(loop);if(!scene)return;const dt=Math.min(.05,(now-last)/1000);last=now;const active=!document.hidden&&race.phase!=='paused'&&race.phase!=='finished';if(active&&(!menu||!scene.reduced))frameTime+=dt;const previous=race.phase;if(!menu){race.visualTime=frameTime;stepRace(race,input(),dt);}if(previous!=='finished'&&race.phase==='finished')finish();
  const info=scene.update(race,frameTime,dt,{menu,quality});audio.update(race.speed,info.immersion,!menu&&race.phase==='racing');if(now-lastHud>65){lastHud=now;if(!menu)hud(info);}}
 requestAnimationFrame(loop);

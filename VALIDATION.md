@@ -32,3 +32,9 @@
 - Safe-lane steering allowance regression now uses the new maximum speed (36 × 1.95 m/s). Existing full-track, jump, collision, audio and geometry regressions pass.
 - Production build and public artifact scan pass; dependency audit reports zero known vulnerabilities. Literal HUD selectors and unique HTML IDs checked.
 - Native browser inspection was attempted but the Mac is still locked. This revision has no manual visual, touch or listening sign-off; earlier manual checks apply to their stated release only.
+
+# v1.4 validation
+
+- 53 Node tests pass. New tests cover distinct four-character lineups/fallback, physical marine-head volume and silhouettes, preservation of every model during mesh batching, live rider/head/turbine animation and repeated switching through the actual scene's setRiders method with shield retention, updated rival labels and removal of old bikes.
+- Offline front and rear three-quarter model previews were rendered directly from the Three.js meshes and visually inspected. This checks model shape/placement; it does not reproduce browser lighting, water, UI or performance.
+- Native browser inspection was attempted but the Mac remained locked. No current browser visual/touch verification is claimed.

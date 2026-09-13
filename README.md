@@ -69,3 +69,9 @@ See `THIRD_PARTY_NOTICES.md` for the MIT water texture/Three.js notice. All new 
 The right thumb now has a dedicated mint 엑셀 pedal above the action row. Hold it (or Up/W) for sustained 1.5× cruising speed without spending fuel, and release to return smoothly to cruising speed. E/the left booster button spends stored energy for a separate 1.95× burst. Brake takes precedence over both. The pedal lights up with a speed fill and held state; instructions distinguish throttle from the booster.
 
 Actual travel speed, smoothly widened camera view, larger twin-jet wake and speed-driven engine/bubble sound reinforce acceleration. Competitors pace at the new cruising speeds without teleporting. Hazard spacing is now 72–90 metres, retaining the safe-lane steering allowance at the higher peak speed. Camera widening still respects reduced-motion preferences.
+
+## v1.4 — ridiculous sea riders
+
+Choose your rider before starting: 펭대리 (penguin with a holiday cap and snorkel), 물개 회장 (seal with whiskers and a coral bow tie), 고등어 씨 (oversized googly-eyed fish head on a human rider), or 잠수 알바 (the original helmeted diver). All four ride the existing aqua-bike, lean into turns and jump; character choice is cosmetic and does not change speed or collision cores.
+
+The three unselected characters become the opponents, with matching name labels and distinct bike colors. Selection persists locally when storage is available, and invalid stored selections fall back to the penguin. The menu updates its 3D rider when a character is selected. Character switches preserve the player's shield mesh and release the previous bikes' private geometry; mesh batching also releases orphaned source geometry.

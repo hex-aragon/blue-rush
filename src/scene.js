@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {characterLineup} from './characters.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {Sky} from 'three/addons/objects/Sky.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
@@ -22,7 +23,14 @@ export function batch(group,exclude=new Set()){
  for(const [mat,geos]of batches){const merged=mergeGeometries(geos);if(merged){const mesh=new T.Mesh(merged,mat);mesh.castShadow=mesh.receiveShadow=true;group.add(mesh);}geos.forEach(g=>g.dispose());}
  remove.forEach(m=>m.removeFromParent());
 }
-function prepareBike(g){batch(g.userData.head);batch(g.userData.rider,new Set([g.userData.head]));const animated=new Set([g.userData.rider]);g.traverse(o=>{if(o.name==='turbine')animated.add(o);});batch(g,animated);return g;}
+export function prepareBike(g){
+ const originals=new Set();g.traverse(m=>{if(m.geometry&&!m.geometry.userData.shared)originals.add(m.geometry);});
+ batch(g.userData.head);batch(g.userData.rider,new Set([g.userData.head]));
+ const animated=new Set([g.userData.rider]);g.traverse(o=>{if(o.name==='turbine')animated.add(o);});batch(g,animated);
+ // Character changes replace the bike; release source geometry orphaned by baking.
+ g.traverse(m=>{if(m.geometry)originals.delete(m.geometry);});for(const geo of originals)geo.dispose();
+ return g;
+}
 function releasePrivate(group){
  const geometries=new Set();group.traverse(m=>{if(m.geometry&&!m.userData.sharedGeometry)geometries.add(m.geometry);});
  // Shared model primitives are not disposed on a course change.
@@ -58,6 +66,15 @@ export class RaceScene{
   this.trail=new T.InstancedMesh(bubbleGeometry,bubbleMat,120);this.trail.frustumCulled=false;this.scene.add(this.trail);this.dummy=new T.Object3D();this.history=[];
   this.setTrack(track,course);this.snap=true;
   addEventListener('resize',()=>{this.camera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.renderer.setSize(innerWidth,innerHeight);});
+ }
+ setRiders(id){
+  const lineup=characterLineup(id);if(this.characterId===lineup[0].id)return;
+  this.characterId=lineup[0].id;this.bubbleShield.removeFromParent();
+  for(const bike of [this.craft,...this.rivals]){bike.removeFromParent();releasePrivate(bike);}
+  const bikes=lineup.map((c,i)=>{const bike=prepareBike(makeCraft(c.color,i+1,c.kind));bike.name=c.name;bike.userData.characterId=c.id;this.scene.add(bike);return bike;});
+  this.craft=bikes[0];this.craft.add(this.bubbleShield);this.rivals=bikes.slice(1);
+  this.rivalNames.forEach((el,i)=>{el.textContent=lineup[i+1].name;el.style.setProperty('--rival-color','#'+lineup[i+1].color.toString(16).padStart(6,'0'));});
+  this.history=[];this.foam.reset();this.snap=true;
  }
  setTrack(track,course){
   this.track=track;this.course=course;releasePrivate(this.courseGroup);if(this.seabed){releasePrivate(this.seabed.group);this.seabed.group.removeFromParent();}

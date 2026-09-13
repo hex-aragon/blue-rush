@@ -25,3 +25,7 @@ Place the mint acceleration button and charge gauge directly above the two steer
 ## Held throttle pedal
 
 Reserve a second compact 98 px mobile control above the right-hand action buttons for the mint 엑셀 pedal. Match the left booster row's height, leaving the speedometer in between. Show “누르고 가속”, then “가속 중” with a lit pedal and rising fill while held. Up/W is always throttle; E is always the banked booster. Emphasize the unlimited hold action on the start/help UI, with brake taking priority if both pedals are pressed.
+
+## Sea misfits
+
+Four compact character buttons sit between the course description and race-start button. Names and recognizable animal icons provide a quick choice; a short joke identifies each personality. The game itself uses volumetric original models: round dark penguin with a pale belly, orange beak, cap and yellow snorkel; broad gray seal with whiskers and bow tie; oversized teal mackerel head with bulging eyes, pink dorsal fin and puckered lips above a human wetsuit; original diver. Preserve the aqua-bike silhouette and rear-view readability with different head shapes, fins, bibs and bike colors. The original human is intentionally the odd one out. Selection is cosmetic with identical handling.
