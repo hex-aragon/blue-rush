@@ -76,7 +76,7 @@ test('successive safe lanes stay reachable during maximum-speed acceleration',()
   const safe=makeObjects(1600,seed).filter(o=>['boost','shield'].includes(o.type)&&o.d>=90);
   for(let i=1;i<safe.length;i++){
    assert.ok(Math.abs(safe[i].x-safe[i-1].x)<=5);
-   const travelTime=(safe[i].d-safe[i-1].d-7)/(36*1.75);
+   const travelTime=(safe[i].d-safe[i-1].d-7)/(36*1.95);
    const s=ready();s.x=safe[i-1].x;run(s,{steer:Math.sign(safe[i].x-s.x)},travelTime-.25);
    assert.ok(Math.abs(s.x-safe[i-1].x)>=Math.abs(safe[i].x-safe[i-1].x)||s.x===safe[i].x);
   }

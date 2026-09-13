@@ -19,3 +19,10 @@ body.playing .vignette{background:linear-gradient(180deg,#022b445e,transparent 2
 .control-deck #boost.ready{background:#9cebd8;color:#0b3946;border-color:#d1fff0}#boost.ready #boost-status{color:#285c60}#boost.ready #boost-fill{background:#267d74}
 .control-deck #boost.boosting{background:#e8ffcf;color:#193e35;border-color:#edffd8;box-shadow:0 0 22px #a1f1d13b}#boost.boosting #boost-status{color:#285c60}
 @media(max-width:700px){.steering-stack{gap:8px}.control-deck #boost{width:98px;height:54px;padding:7px 9px;font-size:12px}#boost small{font-size:7px;margin-left:3px}#boost-status{font-size:9px}}
+
+.action-stack{display:flex;flex-direction:column;align-items:flex-end;gap:9px}
+.control-deck #throttle{width:143px;height:57px;padding:8px 13px;text-align:left;background:#a0f0da;color:#093d4c;border-color:#d5fff0;box-shadow:0 4px 20px #052e4933}
+#throttle>span{display:block}#throttle small{font-size:8px;font-weight:500;margin-left:6px}#throttle-status{font-size:9px;margin-top:4px}
+#throttle-fill{position:absolute;bottom:0;left:0;height:5px;width:0;background:#eaffbf;transition:width .1s}
+.control-deck #throttle.held{background:#eaffbf;border-color:#f3ffd9;box-shadow:0 0 25px #b6ffdc55}
+@media(max-width:700px){.action-stack{gap:8px}.control-deck #throttle{width:98px;height:54px;font-size:12px;padding:7px 8px}#throttle small{font-size:7px;margin-left:2px}.brief-controls{flex-wrap:wrap;gap:5px 10px}}

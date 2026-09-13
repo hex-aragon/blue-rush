@@ -1,6 +1,6 @@
 import {sweptContact,clearance,isPickup} from './collision.js';
 export {objectXAt} from './collision.js';
-export const BOOST_COST=25,BOOST_DURATION=1.8;
+export const BOOST_COST=25,BOOST_DURATION=1.8,THROTTLE_SPEED=1.5,BOOST_SPEED=1.95;
 import {stepRivals} from './rivals.js';
 // Deterministic simulation. Units: metres, seconds. Rendering is independent.
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -13,7 +13,7 @@ export const COURSES=[
 export function random(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 export function makeObjects(length,seed,course){
  const rng=random(seed),rows=[{id:0,d:55,lane:0,x:0,type:'boost'}];let id=1,previousSafe=0;
- for(let d=90;d<length-45;d+=64+rng()*18){
+ for(let d=90;d<length-45;d+=72+rng()*18){
   const choices=[-1,0,1].filter(lane=>Math.abs(lane-previousSafe)<=1),safe=choices[Math.floor(rng()*choices.length)];previousSafe=safe;const hazard=rng()<.5?'rock':rng()<.55?'fish':'shark';
   for(let lane=-1;lane<=1;lane++){
    const roll=rng();if(lane===safe){rows.push({id:id++,d,lane,x:lane*5,type:roll<.8?'boost':'shield'});}
@@ -24,12 +24,12 @@ export function makeObjects(length,seed,course){
  return rows;
 }
 export function createRace({length=1600,course=COURSES[0],seed=1,laps=3,track=null}={}){
- return {phase:'countdown',countdown:3,length,course,laps,track,distance:0,speed:0,x:0,vx:0,jump:0,vy:0,jumpReady:true,time:0,boost:0,energy:0,boostReady:true,boosts:0,dodges:0,resolved:new Set(),slow:0,shield:0,invulnerable:0,drift:0,wasDrift:false,driftDirection:0,events:[],objects:makeObjects(length,seed,course),consumed:new Set(),pickups:0,hits:0,drifts:0,jumps:0,bestLap:Infinity,lapTimes:[],lapStarted:0,rivals:[{name:'Mako',distance:9,speed:course.speed*.94,lane:-1},{name:'Nori',distance:17,speed:course.speed*.91,lane:1},{name:'Coral',distance:25,speed:course.speed*.88,lane:0}]};
+ return {phase:'countdown',countdown:3,length,course,laps,track,distance:0,speed:0,throttle:false,x:0,vx:0,jump:0,vy:0,jumpReady:true,time:0,boost:0,energy:0,boostReady:true,boosts:0,dodges:0,resolved:new Set(),slow:0,shield:0,invulnerable:0,drift:0,wasDrift:false,driftDirection:0,events:[],objects:makeObjects(length,seed,course),consumed:new Set(),pickups:0,hits:0,drifts:0,jumps:0,bestLap:Infinity,lapTimes:[],lapStarted:0,rivals:[{name:'Mako',distance:9,speed:course.speed*.94,lane:-1},{name:'Nori',distance:17,speed:course.speed*.91,lane:1},{name:'Coral',distance:25,speed:course.speed*.88,lane:0}]};
 }
 export function emit(s,type,text){s.events.push({type,text,time:s.time});if(s.events.length>12)s.events.shift();}
 export function charge(s,amount){s.energy=Math.min(100,s.energy+amount);}
 export function collect(s,o){
- if(o.type==='boost'){charge(s,35);s.pickups++;emit(s,'charge','부스터 +35 · 가속 버튼으로 사용');}
+ if(o.type==='boost'){charge(s,35);s.pickups++;emit(s,'charge','부스터 +35 · E / 부스터로 사용');}
  else if(o.type==='shield'){s.shield=9;s.pickups++;emit(s,'shield','버블 실드 · 충돌 1회 방어');}
  else if(s.invulnerable<=0){
   if(s.shield>0){s.shield=0;s.invulnerable=1;emit(s,'shield','실드가 충돌을 막았어요');}
@@ -44,12 +44,12 @@ export function stepRace(s,input,dt){
  const steer=clamp(input.steer||0,-1,1),drifting=!!input.drift&&Math.abs(steer)>.2&&s.speed>14&&s.jump<.1;
  if(drifting){if(s.wasDrift&&Math.sign(steer)!==s.driftDirection)s.drift=0;s.driftDirection=Math.sign(steer);s.drift=Math.min(2.2,s.drift+dt);}
  if(s.wasDrift&&!drifting){if(s.drift>=.65){const gain=Math.round(12+s.drift*10);charge(s,gain);s.drifts++;emit(s,'drift',`드리프트 충전 +${gain}`);}s.drift=0;}
- s.wasDrift=drifting;
+ s.wasDrift=drifting;s.throttle=!!input.throttle&&!input.brake;
  if(!input.boost)s.boostReady=true;
  if(input.boost&&s.boostReady){s.boostReady=false;if(s.boost<=0&&!input.brake&&s.energy>=BOOST_COST){s.energy-=BOOST_COST;s.boost=BOOST_DURATION;s.boosts++;s.slow=0;emit(s,'boost','가속! 해류를 가르세요');}else if(s.energy<BOOST_COST&&s.boost<=0)emit(s,'empty','부스터 25 필요 · 아이템과 회피로 충전');}
  if(input.brake)s.boost=0;
- const target=(input.brake?9:s.course.speed)*(s.boost>0?1.75:1)*(s.slow>0?.49:1)*(drifting?.91:1);
- s.speed+=(target-s.speed)*(1-Math.exp(-dt*(input.brake?4:s.boost>0?3.4:1.25)));
+ const target=(input.brake?9:s.course.speed)*(s.boost>0?BOOST_SPEED:s.throttle?THROTTLE_SPEED:1)*(s.slow>0?.49:1)*(drifting?.91:1);
+ s.speed+=(target-s.speed)*(1-Math.exp(-dt*(input.brake?4:s.boost>0?3.4:s.throttle?2.5:1.25)));
  const targetV=steer*(drifting?11:14);s.vx+=(targetV-s.vx)*(1-Math.exp(-dt*(drifting?3.5:9)));
  s.x+=s.vx*dt;if(Math.abs(s.x)>7.2){s.x=clamp(s.x,-7.2,7.2);s.vx*=.35;}
  if(input.jump&&s.jumpReady&&s.jump===0){s.vy=11.5;s.jumpReady=false;s.jumps++;emit(s,'jump','점프!');}if(!input.jump)s.jumpReady=true;

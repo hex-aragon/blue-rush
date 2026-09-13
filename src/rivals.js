@@ -15,6 +15,7 @@ export function stepRivals(s,dt){
   const gap=r.distance-s.distance;
   // Continuous pack pacing; never teleport or reset distance. Boosts and clean riding still win.
   const pack=clamp(1-gap/150,.48,1.20),wave=1+.035*Math.sin(s.time*.6+i*2);
-  r.distance=Math.min(s.length*s.laps,r.distance+r.speed*pack*wave*dt);
+  r.pace=r.speed*1.4*pack*wave;
+  r.distance=Math.min(s.length*s.laps,r.distance+r.pace*dt);
  }
 }

@@ -107,7 +107,7 @@ export class RaceScene{
   this.seabed.caustics.value=t;const distance=menu?0:s.distance,steer=s.vx/14;
   const {f,surface}=this.pose(this.craft,distance,menu?0:s.x,t,menu?0:s.jump,menu?0:steer+(s.wasDrift?Math.sign(s.vx)*1.4:0),s.speed);
   this.bubbleShield.visible=!menu&&s.shield>0;this.craft.visible=menu||s.invulnerable<=0||Math.floor(t*14)%2===0;
-  this.rivals.forEach((m,i)=>{const r=s.rivals[i];m.visible=true;this.pose(m,menu?12+i*8:r.distance,menu?(i-1)*5:r.x??r.lane*5,t,menu?0:r.jump||0,menu?0:r.steer||0,r.speed);});
+  this.rivals.forEach((m,i)=>{const r=s.rivals[i];m.visible=true;this.pose(m,menu?12+i*8:r.distance,menu?(i-1)*5:r.x??r.lane*5,t,menu?0:r.jump||0,menu?0:r.steer||0,r.pace??r.speed);});
   const lap=Math.floor(s.distance/s.length);
   for(const {o,mesh}of this.objects){const delta=mod(o.d-mod(s.distance,s.length)+s.length/2,s.length)-s.length/2,objLap=lap+(o.d<mod(s.distance,s.length)&&delta>0?1:o.d>mod(s.distance,s.length)&&delta<0?-1:0);
    mesh.visible=!s.consumed.has(`${objLap}:${o.id}`)&&Math.abs(delta)<180;if(!mesh.visible)continue;
@@ -121,8 +121,8 @@ export class RaceScene{
   const forward=f.t.clone();forward.y=0;forward.normalize();
   if(menu){const desired=this.craft.position.clone().add(new T.Vector3(10,6.5,12));this.camera.position.lerp(desired,this.snap?1:.04);this.camera.lookAt(this.craft.position.clone().add(new T.Vector3(-6,2,-8)));}
   else{const mobile=innerWidth<700,back=mobile?17:13;const desired=this.craft.position.clone().addScaledVector(forward,-back);desired.y=f.p.y+T.MathUtils.lerp(mobile?7.6:6.0,mobile?5.6:4.3,smooth(.5,4,-f.p.y))+s.jump*.3;this.camera.position.lerp(desired,this.snap?1:1-Math.exp(-dt*7));const target=this.craft.position.clone().addScaledVector(forward,12);target.y=f.p.y+2.5;this.camera.lookAt(target);}
-  const rush=!menu&&!this.reduced?Math.max(0,Math.min(1,(s.speed/s.course.speed-1)/.75)):0;
-  const targetFov=(innerWidth<700?67:62)+rush*9;this.camera.fov=this.snap?targetFov:T.MathUtils.lerp(this.camera.fov,targetFov,1-Math.exp(-dt*5));this.camera.updateProjectionMatrix();this.snap=false;
+  const rush=!menu&&!this.reduced?Math.max(0,Math.min(1,(s.speed/s.course.speed-1)/.95)):0;
+  const targetFov=(innerWidth<700?67:62)+rush*12;this.camera.fov=this.snap?targetFov:T.MathUtils.lerp(this.camera.fov,targetFov,1-Math.exp(-dt*5));this.camera.updateProjectionMatrix();this.snap=false;
   const under=this.camera.position.y<-.2,immersion=smooth(.15,2,-this.camera.position.y),depth=Math.max(0,-this.craft.position.y);
   this.water.visible=!under;this.underside.visible=under;this.underside.material.uniforms.time.value=t;this.sky.visible=!under;
   this.scene.background.set(under?(this.course.id==='abyss'?0x062739:0x0a4251):0x85c6d9);this.scene.fog.color.copy(this.scene.background);this.scene.fog.density=under?.009:.0016;
@@ -134,7 +134,7 @@ export class RaceScene{
   if(surface&&!menu){const p=this.craft.position;this.foam.update({x:p.x,z:p.z,heading:Math.atan2(f.t.x,-f.t.z),speed:s.speed,heave:p.y-s.jump,pitch:0,roll:0,rudder:steer,jumpHeight:s.jump,throttle:1},{kind:'jetski',length:5.6,beam:2.3,draft:.4},t,.7);}else this.foam.reset();
   if(!menu&&s.speed>2){this.history.unshift(this.craft.position.clone().addScaledVector(forward,-2.7));if(this.history.length>60)this.history.pop();}
   this.trail.visible=!menu&&(under||s.boost>0);let bubbleCount=0;
-  this.history.forEach((p,i)=>{for(const side of [-1,1]){this.dummy.position.copy(p).addScaledVector(f.right,side*(.4+i*.025));this.dummy.position.y+=i*.018+Math.sin(i*2+t)*.08;this.dummy.scale.setScalar((1-i/60)*(.07+(i%4)*.02)*(s.boost>0?1.7:1));this.dummy.updateMatrix();this.trail.setMatrixAt(bubbleCount++,this.dummy.matrix);}});this.trail.count=bubbleCount;this.trail.instanceMatrix.needsUpdate=true;
+  this.history.forEach((p,i)=>{for(const side of [-1,1]){this.dummy.position.copy(p).addScaledVector(f.right,side*(.4+i*.025));this.dummy.position.y+=i*.018+Math.sin(i*2+t)*.08;this.dummy.scale.setScalar((1-i/60)*(.07+(i%4)*.02)*(s.boost>0?1.9:s.throttle?1.4:1));this.dummy.updateMatrix();this.trail.setMatrixAt(bubbleCount++,this.dummy.matrix);}});this.trail.count=bubbleCount;this.trail.instanceMatrix.needsUpdate=true;
   let visibleRivals=0;this.rivalNames.forEach((el,i)=>{const m=this.rivals[i],p=m.position.clone().add(new T.Vector3(0,4.4,0)).project(this.camera),range=m.position.distanceTo(this.craft.position);const visible=!menu&&range<95&&p.z<1&&Math.abs(p.x)<.94&&Math.abs(p.y)<.9;el.hidden=!visible;if(visible){visibleRivals++;el.style.transform=`translate(-50%,-100%) translate(${(p.x*.5+.5)*innerWidth}px,${(-p.y*.5+.5)*innerHeight}px)`;}});
   this.renderer.render(this.scene,this.camera);
   return {under,immersion,depth,drawCalls:this.renderer.info.render.calls,visibleRivals};

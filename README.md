@@ -9,12 +9,13 @@ A standalone Three.js underwater arcade racer. Follow a looping rail, dodge wild
 - Left/right arrows or A/D: steer within the illuminated course.
 - Space: jump. Release before jumping again. Rocks, small fish and ink hazards can be cleared; a high enough jump also clears shark bodies.
 - Shift + steering: charge a drift for at least 0.65 seconds; release to bank boost energy.
-- E / Up arrow / acceleration button: spend 25 energy for a 1.8-second burst; tap again after it ends for the next burst.
+- Up arrow / W / hold the right-hand 엑셀 button: unlimited throttle to 1.5× cruise speed. Release to coast back to cruise; no boost energy required.
+- E / booster button: spend 25 energy for a 1.8-second burst; tap again after it ends for the next burst.
 - Down arrow / S: brake. Forward movement is automatic.
 - Escape: pause/resume. Losing focus or hiding the tab pauses the race.
-- Touch: simultaneous steering, jump, drift, acceleration and brake buttons. Sound is opt-in. Low graphics reduces pixel density.
+- Touch: simultaneous steering, jump, drift, throttle, booster and brake buttons. Sound is opt-in. Low graphics reduces pixel density.
 
-Mint lightning banks 35 energy; clean obstacle passes bank 10 each, and charged drift releases bank 19–34. The tank holds 100. Acceleration consumes 25 and targets 1.75× cruising speed for 1.8 seconds, with quicker throttle response. Brake cancels the burst. Blue shields absorb one hit within nine seconds. Purple ink slows the craft for 2.8 seconds. Impacts briefly slow the craft and grant temporary immunity. Hazard rows are 64–82 metres apart and always retain an item-marked safe lane; consecutive safe lanes move by at most one lane; each run has a new seed. Marine creatures move within their lanes using the same positions for collision and rendering.
+Mint lightning banks 35 energy; clean obstacle passes bank 10 each, and charged drift releases bank 19–34. The tank holds 100. Acceleration consumes 25 and targets 1.95× cruising speed for 1.8 seconds, with quicker throttle response. Brake cancels the burst. Blue shields absorb one hit within nine seconds. Purple ink slows the craft for 2.8 seconds. Impacts briefly slow the craft and grant temporary immunity. Hazard rows are 72–90 metres apart and always retain an item-marked safe lane; consecutive safe lanes move by at most one lane; each run has a new seed. Marine creatures move within their lanes using the same positions for collision and rendering.
 
 ## Courses
 
@@ -61,3 +62,10 @@ See `THIRD_PARTY_NOTICES.md` for the MIT water texture/Three.js notice. All new 
 - Speed rises more quickly, the camera field of view smoothly widens with actual speed (disabled for reduced motion), and the twin bubble wake grows during acceleration.
 - Replaced the old wide rectangle / 8 m shark wall with forgiving rounded 3D body cores. Swept contact follows lateral movement, jump altitude, track elevation, shared surface wave heave and shared animal animation time. Decorative fins/spikes/limbs do not count as hits. This is intentionally forgiving arcade collision, not per-triangle physics.
 - Dodges are awarded after the whole craft clears an obstacle, once per lap. Contact during shield or immunity cannot earn a dodge. Passed obstacles cannot hit later. Touching the rail edge no longer causes hidden slowdown. All rows retain a marked safe lane and give enough room to change lanes while boosted.
+
+
+## v1.3 — hold-to-accelerate pedal
+
+The right thumb now has a dedicated mint 엑셀 pedal above the action row. Hold it (or Up/W) for sustained 1.5× cruising speed without spending fuel, and release to return smoothly to cruising speed. E/the left booster button spends stored energy for a separate 1.95× burst. Brake takes precedence over both. The pedal lights up with a speed fill and held state; instructions distinguish throttle from the booster.
+
+Actual travel speed, smoothly widened camera view, larger twin-jet wake and speed-driven engine/bubble sound reinforce acceleration. Competitors pace at the new cruising speeds without teleporting. Hazard spacing is now 72–90 metres, retaining the safe-lane steering allowance at the higher peak speed. Camera widening still respects reduced-motion preferences.

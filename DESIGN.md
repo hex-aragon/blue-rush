@@ -20,3 +20,8 @@ Review: address the flat appearance by geometry, occlusion and lighting rather t
 ## Banked acceleration
 
 Place the mint acceleration button and charge gauge directly above the two steering buttons, leaving the existing right-hand actions and central speed readout in place. The compact 98 px mobile width preserves the gap around the speedometer on narrow phones. Fuel-ready mint and active pale gold distinguish stored energy from a running burst. Acceleration changes physical speed, smooth camera field of view and the 3D wake; never add blur over the rider. Safe lanes carry items, with wider row spacing and no sudden two-lane switches.
+
+
+## Held throttle pedal
+
+Reserve a second compact 98 px mobile control above the right-hand action buttons for the mint 엑셀 pedal. Match the left booster row's height, leaving the speedometer in between. Show “누르고 가속”, then “가속 중” with a lit pedal and rising fill while held. Up/W is always throttle; E is always the banked booster. Emphasize the unlimited hold action on the start/help UI, with brake taking priority if both pedals are pressed.

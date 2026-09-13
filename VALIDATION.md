@@ -25,3 +25,10 @@
 - Rendering and collision share surface heave and animal bob calculations. Collision intentionally uses forgiving core volumes, excluding ornamental fins/spikes/limbs rather than claiming exact triangle contact.
 - Production build and public artifact scan pass. Dependency audit: zero known vulnerabilities at validation time. Three.js retains the existing >500 kB vendor-chunk advisory.
 - Browser inspection was attempted twice but the Mac remained locked. No v1.2 visual, touch, frame-rate or listening verification is claimed. The earlier v1.0 manual evidence above applies only to that release.
+
+# v1.3 validation
+
+- 49 Node tests pass. New cases measure sustained throttle versus cruise on every course, fuel-free acceleration, smooth release, throttle plus booster spending/recovery, brake priority, slowdown under throttle, countdown/pause immobility and bounded continuous rival pacing during sustained throttle.
+- Safe-lane steering allowance regression now uses the new maximum speed (36 × 1.95 m/s). Existing full-track, jump, collision, audio and geometry regressions pass.
+- Production build and public artifact scan pass; dependency audit reports zero known vulnerabilities. Literal HUD selectors and unique HTML IDs checked.
+- Native browser inspection was attempted but the Mac is still locked. This revision has no manual visual, touch or listening sign-off; earlier manual checks apply to their stated release only.

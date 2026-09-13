@@ -1,6 +1,6 @@
 import {clamp,random} from './game.js';
 export function audioMix(immersion,speed=0,active=true){
- const wet=clamp(typeof immersion==='boolean'?(immersion?1:0):immersion,0,1),pace=clamp(speed/55,0,1);
+ const wet=clamp(typeof immersion==='boolean'?(immersion?1:0):immersion,0,1),pace=clamp(speed/70,0,1);
  return {surface:active?(1-wet)*(.34+pace*.14):0,underwater:active?wet*.48:0,bubbles:active?wet*(.18+pace*.24):0,motor:active?(.045+pace*.045):0,motorHz:(wet>0.5?38:58)+speed*(wet>0.5?1.3:2.2)};
 }
 export function synthesizeAmbience(rate=22050,seconds=12){
